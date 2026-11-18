@@ -1,0 +1,4 @@
+-keep class com.wireguard.** { *; }
+-keep class com.afghanvpn.app.** { *; }
+-keepclassmembers class * { native <methods>; }
+-dontwarn org.slf4j.**

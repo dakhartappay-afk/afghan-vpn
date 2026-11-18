@@ -1,0 +1,1 @@
+<resources><style name="Theme.AfghanVpn" parent="android:Theme.Material.NoActionBar"><item name="android:windowBackground">#05080F</item><item name="android:statusBarColor">#05080F</item><item name="android:navigationBarColor">#05080F</item></style></resources>

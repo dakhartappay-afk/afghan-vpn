@@ -1,0 +1,17 @@
+name: Create signing key (run ONCE)
+on: workflow_dispatch
+permissions: { contents: read }
+jobs:
+  key:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Generate key
+        run: |
+          PASS=$(openssl rand -hex 16); echo "::add-mask::$PASS"
+          keytool -genkeypair -keystore release.jks -alias afghanvpn -keyalg RSA -keysize 4096 -validity 10000 \
+            -storepass "$PASS" -keypass "$PASS" -dname "CN=AFGHAN VPN, O=AFGHAN VPN, C=AE"
+          base64 -w0 release.jks > keystore.b64.txt
+          printf "KEYSTORE_PASSWORD = %s\nKEY_PASSWORD = %s\nKEY_ALIAS = afghanvpn\n" "$PASS" "$PASS" > secrets.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: SIGNING-KEY-PRIVATE-delete-after-use, path: "keystore.b64.txt\nsecrets.txt\nrelease.jks", retention-days: 1 }

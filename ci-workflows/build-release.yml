@@ -1,0 +1,32 @@
+name: Build RELEASE APK (signed)
+on: workflow_dispatch
+permissions: { contents: read }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tools/scan-secrets.sh
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: 8.7 }
+      - name: Restore signing key from GitHub Secrets
+        env: { KEYSTORE_B64: "${{ secrets.KEYSTORE_B64 }}" }
+        run: |
+          test -n "$KEYSTORE_B64" || { echo "Secret KEYSTORE_B64 is missing - run 'Create signing key' first"; exit 1; }
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+      - name: Build
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: gradle assembleRelease -PAPI_BASE_URL="${{ vars.API_BASE_URL }}"
+      - run: sha256sum app/build/outputs/apk/release/*.apk
+      - name: Verify the official welcome image is inside the APK, unchanged
+        run: bash tools/verify-welcome-image.sh app/build/outputs/apk/release/app-release.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: AfghanVPN-RELEASE-apk, path: app/build/outputs/apk/release/*.apk, retention-days: 7 }

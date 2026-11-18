@@ -1,0 +1,20 @@
+name: Build DEBUG APK (testing only)
+on: workflow_dispatch
+permissions: { contents: read }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tools/scan-secrets.sh
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: 8.7 }
+      - run: gradle assembleDebug -PAPI_BASE_URL="${{ vars.API_BASE_URL || 'https://api.example.invalid' }}"
+      - name: Verify the official welcome image is inside the APK, unchanged
+        run: bash tools/verify-welcome-image.sh app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: AfghanVPN-DEBUG-apk, path: app/build/outputs/apk/debug/*.apk, retention-days: 7 }
