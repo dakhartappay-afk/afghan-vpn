@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun Gate(vm: VpnViewModel = viewModel()) { if (vm.registered.value) Dashboard(vm) else Register(vm) }
+fun Gate(vm: VpnViewModel = viewModel()) { if (BuildConfig.DEBUG || vm.registered.value) Dashboard(vm) else Register(vm) }
 
 @Composable
 fun Register(vm: VpnViewModel) {
