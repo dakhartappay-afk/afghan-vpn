@@ -1,3 +1,4 @@
+import java.security.MessageDigest
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 val apiUrl = project.property("API_BASE_URL").toString()
 android {
@@ -37,7 +38,7 @@ val verifyWelcomeImage by tasks.registering {
     val img = file("src/main/res/drawable-nodpi/welcome_art.png")
     val expected = file("welcome_art.sha256").readText().trim().split(" ")[0]
     doLast {
-        val actual = java.security.MessageDigest.getInstance("SHA-256").digest(img.readBytes()).joinToString("") { "%02x".format(it) }
+        val actual = MessageDigest.getInstance("SHA-256").digest(img.readBytes()).joinToString("") { "%02x".format(it) }
         if (actual != expected) throw GradleException("STOP: the official welcome image (welcome_art.png) was changed or replaced. Restore your original image.")
     }
 }
